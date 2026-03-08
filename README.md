@@ -8,6 +8,8 @@ For documentation on the language features, please see [Documentation](./docs/ov
 
 For syntax highliting, the sunwave language provides a vimscript file and a vscode plugin, both located in [syntax](./syntax/). 
 
+./std contains the Sunwave standard library.
+
 ## Installation and Dependencies
 
 To compile sunwave langauge, run `make`. Make will default to the C++ frontend (for the time being). Requirements for compilation are as follows:
