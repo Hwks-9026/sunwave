@@ -10,9 +10,13 @@ For syntax highliting, the sunwave language provides a vimscript file and a vsco
 
 ./std contains the Sunwave standard library.
 
+**Sunwave* source code uses the same file extension as Sway, a blockchain contract langauge. Both this langauge and that one are esoteric enough that it should not matter. Just note that in the github langauge breakdown, any code marked as 'sway' is actually sunwave source code from either examples or the standard library.
+
 ## Installation and Dependencies
 
-To compile sunwave langauge, run `make`. Make will default to the C++ frontend (for the time being). Requirements for compilation are as follows:
+To compile sunwave langauge, run `make`. Make will default to the C++ frontend (for the time being). The final binary will be ./bin/sunwave. 
+
+Requirements for compilation are as follows:
 
 - Cargo
 - Rust version 1.88.0 or later
