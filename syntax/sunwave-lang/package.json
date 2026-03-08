@@ -1,0 +1,21 @@
+{
+  "name": "sw-math-lang",
+  "displayName": "SW Math Language",
+  "description": "Syntax highlighting for my custom math language",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.50.0" },
+  "categories": [ "Programming Languages" ],
+  "contributes": {
+    "languages": [{
+      "id": "sw",
+      "aliases": ["SW Math", "sw"],
+      "extensions": [".sw"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "sw",
+      "scopeName": "source.sw",
+      "path": "./syntaxes/sw.tmLanguage.json"
+    }]
+  }
+}
