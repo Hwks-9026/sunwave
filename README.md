@@ -22,7 +22,7 @@ Requirements for compilation are as follows:
 - Rust version 1.88.0 or later
 - The GCC C++ compiler with C++ 17
 
-To verify that these dependencies are installed, run `make verify`.
+To verify that these dependencies are installed, run `make verify`. Make will also automatically run verify each time `make` is run.
 If the rust toolchain isn't installed, you can install it with the following command, found on the [rust website](https://rust-lang.org/learn/get-started/). 
 `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 

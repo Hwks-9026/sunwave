@@ -30,13 +30,21 @@ TARGET = sunwave
 # Default Rule
 all: $(TARGET)
 
+verify:
+	@echo "Checking system requirements..."
+	@$(CARGO) --version > /dev/null 2>&1 || (echo "Error: Cargo is not installed." && exit 1)
+	@rustc --version | awk '{split($$2,a,"."); if (a[1]<1 || (a[1]==1 && a[2]<88)) {print "Error: Rust version must be 1.88.0 or later."; exit 1}}'
+	@$(CXX) -v > /dev/null 2>&1 || (echo "Error: GCC is not installed." && exit 1)
+	@echo "int main(){}" | $(CXX) -std=c++17 -x c++ - -o /dev/null > /dev/null 2>&1 || (echo "Error: $(CXX) does not support C++17." && exit 1)
+	@echo "Verification successful: All requirements met."
+
 # 1. Build the Rust Library
 $(LIB_PATH): $(shell find $(RUST_DIR)/src -type f) $(RUST_DIR)/Cargo.toml
 	@echo "Building Rust library..."
 	$(CARGO) build --manifest-path $(RUST_DIR)/Cargo.toml --release
 
 # 2. Compile the C++ App
-$(TARGET): $(CPP_DIR)/main.cpp $(LIB_PATH)
+$(TARGET): verify $(CPP_DIR)/main.cpp $(LIB_PATH)
 	@echo "Compiling C++ application with RPATH..."
 	$(CXX) $(CXXFLAGS) $(CPP_DIR)/main.cpp \
 		-L$(RUST_OUT_DIR) \
@@ -55,4 +63,4 @@ else
 	LD_LIBRARY_PATH=$(RUST_OUT_DIR) ./$(TARGET)
 endif
 
-.PHONY: all clean run
+.PHONY: all clean run verify
