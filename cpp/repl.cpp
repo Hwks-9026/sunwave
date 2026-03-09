@@ -38,7 +38,6 @@ void Repl::process_command(const std::string& input) {
 
 std::string Repl::read_input() {
     std::string line;
-    int cursor_pos = 0;
     history_index = history.size();
 
     std::cout << ">> " << std::flush;
