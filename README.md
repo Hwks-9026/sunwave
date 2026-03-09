@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Sunwave** is a functional programming language with side effects. If that weren't cursed enough, the project has two frontends, one written in rust, and the other in C++. They both use the rust backend.
+**Sunwave** is a functional programming language based on side effects. If that weren't cursed enough, the project has a c++ user interface, and a rust backend.
 
 For documentation on the language features, please see [Documentation](./docs/overview.md).
 

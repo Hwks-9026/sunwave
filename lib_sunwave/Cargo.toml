@@ -1,0 +1,16 @@
+[package]
+name = "lib_sunwave"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "sunwave"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+pest = "2.8.6"
+pest_derive = "2.8.6"
+lazy_static = "1.5.0"
+rustyline = "17.0.2"
+clap = {version = "4.5.60", features = ["derive"]}
+libc = "0.2"

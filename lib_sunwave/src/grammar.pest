@@ -1,0 +1,59 @@
+file = { SOI ~ (line ~ NEWLINE*)* ~ EOI }
+line = { (import | module | export | assignment | equivalence | expr) ~ suppress? }
+suppress = {";"}
+
+import = { "import" ~ string_literal }
+string_literal = { "\"" ~ inner_str ~ "\"" }
+inner_str = { (!"\"" ~ ANY)* }
+module = {"module" ~ ident ~ "{\n" ~ (line ~ NEWLINE*)* ~ "}"}
+export = {"export" ~ ident}
+
+assignment = { l_value ~ ":=" ~ expr }
+l_value = {ident ~ dot_access* }
+
+equivalence = { expr ~ "=" ~ expr }
+
+expr = { ternary | comparison }
+
+ternary = { comparison ~ "?" ~ expr ~ ":" ~ expr }
+
+comparison = { sum ~ (compare_op ~ sum)* }
+compare_op = { "==" | "!=" | ">=" | "<=" | ">" | "<" }
+
+sum     = { term ~ (add_op ~ term)* }
+add_op  = { "+" | "-" | "|" }
+
+term    = { factor ~ (mul_op ~ factor)* }
+mul_op  = { "*" | "/" }
+
+factor  = { primary ~ (pow_op ~ primary)* }
+pow_op  = { "^" | "!"}
+
+length = {"#" ~ primary}
+
+primary = { atom ~ (call_args | dot_access)* }
+
+atom = { number | lambda | recur_expr | loop_expr | length | block | tuple | ident | "(" ~ expr ~ ")" }
+
+tuple = { "(" ~ expr ~ ("," ~ expr)* ~ ","? ~ ")" }
+tuple_index = @{ ASCII_DIGIT+ }
+
+loop_expr = { "loop" ~ "(" ~ (assignment ~ ("," ~ assignment)*)? ~ ")" ~ "{" ~ expr ~ "}" }
+recur_expr = { "recur" ~ "(" ~ (expr ~ ("," ~ expr)*)? ~ ")" }
+
+block = { "{" ~ (statement ~ ";")* ~ expr? ~ "}" }
+
+statement = _{assignment | export | import | expr}
+
+dot_access = { "." ~ (ident | tuple_index) }
+call_args  = { "(" ~ arg_list? ~ ")" }
+arg_list   = { expr ~ ("," ~ expr)* }
+
+lambda     = { "|" ~ id_list? ~ "|" ~ expr }
+id_list    = { ident ~ ("," ~ ident)* }
+
+ident      = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+number     = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+COMMENT    = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
