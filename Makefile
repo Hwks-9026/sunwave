@@ -1,66 +1,86 @@
-# Variables
+# Compiler Name Variables
 CXX = g++
 CXXFLAGS = -std=c++17 -I./cpp -Wall
 CARGO = cargo
 
-# Library and Directory Names
+# Configuration
+PROFILE ?= release
 RUST_DIR = lib_sunwave
 CPP_DIR = cpp
-LIB_NAME = sunwave 
+BUILD_DIR = build
+LIB_NAME = sunwave
 
-# Detect OS for library extensions
+# Paths
+RUST_OUT_DIR = $(RUST_DIR)/target/$(PROFILE)
+CARGO_FLAGS = --manifest-path $(RUST_DIR)/Cargo.toml
+ifeq ($(PROFILE),release)
+    CARGO_FLAGS += --release
+endif
+
+# Library naming
 ifeq ($(OS),Windows_NT)
     LIB_EXT = dll
     LIB_PREFIX = 
 else
     UNAME_S := $(shell uname -s)
+    LIB_PREFIX = lib
     ifeq ($(UNAME_S),Darwin)
         LIB_EXT = dylib
     else
         LIB_EXT = so
     endif
-    LIB_PREFIX = lib
 endif
 
-# Paths
-RUST_OUT_DIR = $(RUST_DIR)/target/release
 LIB_PATH = $(RUST_OUT_DIR)/$(LIB_PREFIX)$(LIB_NAME).$(LIB_EXT)
 TARGET = sunwave
+VERIFY_STAMP = $(BUILD_DIR)/.verify_done
 
-# Default Rule
+# 1. Source and Object Discovery
+SRCS = $(wildcard $(CPP_DIR)/*.cpp)
+# This transforms 'cpp/main.cpp' into 'build/main.o'
+OBJS = $(patsubst $(CPP_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
+
+# Rules
 all: $(TARGET)
 
-verify:
+# Verify depends on the existence of the build directory
+$(VERIFY_STAMP): | $(BUILD_DIR)
 	@echo "Checking system requirements..."
-	@$(CARGO) --version > /dev/null 2>&1 || (echo "Error: Cargo is not installed." && exit 1)
-	@rustc --version | awk '{split($$2,a,"."); if (a[1]<1 || (a[1]==1 && a[2]<88)) {print "Error: Rust version must be 1.88.0 or later."; exit 1}}'
-	@$(CXX) -v > /dev/null 2>&1 || (echo "Error: GCC is not installed." && exit 1)
-	@echo "int main(){}" | $(CXX) -std=c++17 -x c++ - -o /dev/null > /dev/null 2>&1 || (echo "Error: $(CXX) does not support C++17." && exit 1)
-	@echo "Verification successful: All requirements met."
+	@$(CARGO) --version > /dev/null 2>&1 || (echo "Error: Cargo missing." && exit 1)
+	@rustc --version | awk '{split($$2,a,"."); if (a[1]<1 || (a[1]==1 && a[2]<88)) {print "Error: Rust < 1.88.0"; exit 1}}'
+	@$(CXX) -v > /dev/null 2>&1 || (echo "Error: GCC missing." && exit 1)
+	@touch $(VERIFY_STAMP)
 
-# 1. Build the Rust Library
+# 2. Updated Target Rule
+$(TARGET): $(VERIFY_STAMP) $(OBJS) $(LIB_PATH)
+	@echo "Linking $(TARGET)..."
+	$(CXX) $(CXXFLAGS) $(OBJS) -L$(RUST_OUT_DIR) -l$(LIB_NAME) -Wl,-rpath,'$$ORIGIN/$(RUST_OUT_DIR)' -lpthread -ldl -o $(TARGET)
+
+# 3. Compile rust sunwave language library
 $(LIB_PATH): $(shell find $(RUST_DIR)/src -type f) $(RUST_DIR)/Cargo.toml
-	@echo "Building Rust library..."
-	$(CARGO) build --manifest-path $(RUST_DIR)/Cargo.toml --release
+	@echo "Building Rust library in $(PROFILE) mode..."
+	$(CARGO) build $(CARGO_FLAGS)
 
-# 2. Compile the C++ App
-$(TARGET): verify $(CPP_DIR)/main.cpp $(LIB_PATH)
-	@echo "Compiling C++ application with RPATH..."
-	$(CXX) $(CXXFLAGS) $(CPP_DIR)/main.cpp \
-		-L$(RUST_OUT_DIR) \
-		-l$(LIB_NAME) \
-		-Wl,-rpath,'$$ORIGIN/$(RUST_OUT_DIR)' \
-		-lpthread -ldl -o $(TARGET)
+# 4. Rule to compile .cpp to build/%.o
+$(BUILD_DIR)/%.o: $(CPP_DIR)/%.cpp $(CPP_DIR)/sunwave.h | $(BUILD_DIR)
+	@echo "Compiling $< -> $@"
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# 4. Create the build directory if it doesn't exist
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+# 5. Clean build artifacts
 clean:
 	$(CARGO) clean --manifest-path $(RUST_DIR)/Cargo.toml
 	rm -f $(TARGET)
+	rm -rf $(BUILD_DIR)
 
 run: $(TARGET)
 ifeq ($(UNAME_S),Darwin)
-	DYLD_LIBRARY_PATH=$(RUST_OUT_DIR) ./$(TARGET)
+	DYLD_LIBRARY_PATH=$(RUST_OUT_DIR) ./$(TARGET) $(FILE)
 else
-	LD_LIBRARY_PATH=$(RUST_OUT_DIR) ./$(TARGET)
+	LD_LIBRARY_PATH=$(RUST_OUT_DIR) ./$(TARGET) $(FILE)
 endif
 
-.PHONY: all clean run verify
+.PHONY: all clean run

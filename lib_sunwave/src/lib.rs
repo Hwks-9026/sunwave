@@ -32,7 +32,7 @@ pub extern "C" fn sunwave_execute(ctx: *mut SunwaveContext, code: *const c_char)
     
     match run_sunwave(code_str, &mut context.env) {
         Ok(()) => {
-            let res = CString::new(format!("Ok.")).unwrap();
+            let res = CString::new(format!("Ok")).unwrap();
             res.into_raw()
         }
         Err(e) => {
