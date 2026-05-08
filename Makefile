@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -I./cpp -Wall
+CXXFLAGS = -std=c++17 -I./cpp -Wall -O3
 CARGO = cargo
 
 PROFILE ?= release
@@ -27,7 +27,9 @@ else
     endif
 endif
 
-LIB_PATH = $(RUST_OUT_DIR)/$(LIB_PREFIX)$(LIB_NAME).$(LIB_EXT)
+RUST_SRCS := $(wildcard $(RUST_DIR)/src/*.rs)
+$(LIB_PATH): $(RUST_SRCS) $(RUST_DIR)/Cargo.toml
+
 TARGET = sunwave
 VERIFY_STAMP = $(BUILD_DIR)/.verify_done
 
@@ -35,6 +37,19 @@ VERIFY_STAMP = $(BUILD_DIR)/.verify_done
 SRCS = $(wildcard $(CPP_DIR)/*.cpp)
 # This transforms 'cpp/main.cpp' into 'build/main.o'
 OBJS = $(patsubst $(CPP_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
+
+ifeq ($(OS),Windows_NT)
+    SHELL := cmd.exe
+    MKDIR_P = if not exist "$(BUILD_DIR)" mkdir "$(BUILD_DIR)"
+else
+    MKDIR_P = mkdir -p "$(BUILD_DIR)"
+endif
+
+ifeq ($(OS),Windows_NT)
+    LDLIBS =
+else
+    LDLIBS = -Wl,-rpath,'$$ORIGIN/$(RUST_OUT_DIR)' -lpthread -ldl
+endif
 
 all: $(TARGET)
 
@@ -48,9 +63,10 @@ $(VERIFY_STAMP): | $(BUILD_DIR)
 
 $(TARGET): $(VERIFY_STAMP) $(OBJS) $(LIB_PATH)
 	@echo "Linking $(TARGET)..."
-	$(CXX) $(CXXFLAGS) $(OBJS) -L$(RUST_OUT_DIR) -l$(LIB_NAME) -Wl,-rpath,'$$ORIGIN/$(RUST_OUT_DIR)' -lpthread -ldl -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(OBJS) -L$(RUST_OUT_DIR) -l$(LIB_NAME) $(LDLIBS) -o $(TARGET)
 
-$(LIB_PATH): $(shell find $(RUST_DIR)/src -type f) $(RUST_DIR)/Cargo.toml
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+$(LIB_PATH): $(call rwildcard,$(RUST_DIR)/src,*) $(RUST_DIR)/Cargo.toml
 	@echo "Building Rust library in $(PROFILE) mode..."
 	$(CARGO) build $(CARGO_FLAGS)
 
@@ -59,19 +75,16 @@ $(BUILD_DIR)/%.o: $(CPP_DIR)/%.cpp $(CPP_DIR)/sunwave.h | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+	@$(MKDIR_P)
 
 clean:
 	$(CARGO) clean --manifest-path $(RUST_DIR)/Cargo.toml
-	rm -f $(TARGET)
-	rm -rf $(BUILD_DIR)
-
-clean_rust:
-	$(CARGO) clean --manifest-path $(RUST_DIR)/Cargo.toml
+	-$(RM) $(TARGET)
+	-$(RMDIR) $(BUILD_DIR)
 
 clean_cpp:
-	rm -f $(TARGET)
-	rm -rf $(BUILD_DIR)
+	-$(RM) $(TARGET)
+	-$(RMDIR) $(BUILD_DIR)
 
 verify: $(VERIFY_STAMP)
 
