@@ -16,6 +16,21 @@ zeros := |cols, rows| {
 };
 export zeros;
 
+zeros_square := |n| {zeros(n, n)};
+export zeros_square;
+
+
+rotate_180 := |matrix| {
+    std.list.is_tuple(matrix.0) == 0 ? matrix : {
+        loop(i := (#matrix - 1), new := std.list.new_empty()) {
+            i < 0 ? new : {
+                recur(i - 1, new + std.list.new_solo(std.list.reverse(matrix.i)))
+            }
+        }
+    }
+};
+export rotate_180;
+
 zeros_n_d := |dimensions_tuple| {
     #dimensions_tuple == 2 ? zeros(dimensions_tuple.0, dimensions_tuple.1) : {
     
@@ -31,4 +46,17 @@ zeros_n_d := |dimensions_tuple| {
     }
 };
 export zeros_n_d;
+
+
+tridiag := |diag, sub_diag, sup_diag, n| {
+    A := loop(i := 0, A := zeros(n, n)) {
+        i >= n ? A : {
+            A.i.i := diag;
+            recur(i+1, A);
+        }
+    };
+    A
+};
+
+export tridiag;
 

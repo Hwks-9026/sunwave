@@ -73,4 +73,12 @@ You can run sunwave with a file path as the first command line argument,
 and it will execute that file instead of providing a repl.
 Note: multi-line statements and defining modules are only supported in files.
 
+To import the standard library, simply execute:
+
+import "std"
+
+Then list out functionality with:
+
+std
+
 Happy Sunwaving!

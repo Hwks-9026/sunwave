@@ -47,7 +47,6 @@ impl std::fmt::Display for Access {
 #[derive(Debug, Clone)]
 pub enum Expr {
     Number(f64),
-    String(String),
     Variable(String),
     Tuple(Vec<Expr>),
     MemberAccess(Box<Expr>, Vec<Access>),
@@ -96,9 +95,8 @@ fn parse_expr(pairs: pest::iterators::Pairs<Rule>) -> Expr {
                 };
                 let mut current_expr = match actual_atom.as_rule() {
                     Rule::number => Expr::Number(actual_atom.as_str().parse().unwrap()),
-                    Rule::ident  => Expr::Variable(actual_atom.as_str().trim().to_string()),
+                    Rule::ident  => Expr::Variable(actual_atom.as_str().trim().trim().to_string()),
                     Rule::expr   => parse_expr(actual_atom.into_inner()),
-                    Rule::string_literal => Expr::String(actual_atom.into_inner().as_str().to_string()),
                     
                     Rule::lambda => {
                         let mut lambda_inner = actual_atom.into_inner();

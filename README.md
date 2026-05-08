@@ -16,6 +16,8 @@ For syntax highliting, the sunwave language provides a vimscript file and a vsco
 
 To compile sunwave langauge, run `make`. Make will default to the C++ frontend (for the time being). The final binary will be ./bin/sunwave. 
 
+There should be build artifacts present for Windows and Linux. If you are on a Mac, please continue reading.
+
 Requirements for compilation are as follows:
 
 - Cargo

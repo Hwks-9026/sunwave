@@ -8,9 +8,9 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use pest::Parser;
 
+use crate::eval::*;
 use crate::parser::*;
-use crate::eval::environment::*;
-use crate::eval::core::run_program;
+
 // Wrap the Environment in an opaque struct for C++
 pub struct SunwaveContext {
     env: Rc<RefCell<Environment>>,
@@ -67,6 +67,6 @@ fn run_sunwave(code_str: &str, env: &mut Rc<RefCell<Environment>>) -> Result<(),
         Ok(stmts) => {stmts},
         Err(e) => return Err(e.to_string())
     };
-    run_program(statements, env)?;
+    eval::run_program(statements, env)?;
     Ok(())
 }

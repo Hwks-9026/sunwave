@@ -102,7 +102,7 @@ module trig {
 export trig;
 
 module calculus {
-    derivative := |f| |x| (f(x + core.eps) - f(x)) / (constants.eps);
+    derivative := |f| |x| (f(x + constants.eps) - f(x)) / (constants.eps);
     export derivative;
 
     derivate := | f, x | derivative(f)(x); 

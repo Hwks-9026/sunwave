@@ -1,5 +1,5 @@
 file = { SOI ~ (line ~ NEWLINE*)* ~ EOI }
-line = { ((import | module | export | assignment | equivalence | expr) ~ suppress?)}
+line = { (import | module | export | assignment | equivalence | expr) ~ suppress? }
 suppress = {";"}
 
 import = { "import" ~ string_literal }
@@ -33,7 +33,7 @@ length = {"#" ~ primary}
 
 primary = { atom ~ (call_args | dot_access)* }
 
-atom = { number | lambda | recur_expr | loop_expr | length | block | tuple | ident | string_literal | "(" ~ expr ~ ")" }
+atom = { number | lambda | recur_expr | loop_expr | length | block | tuple | ident | "(" ~ expr ~ ")" }
 
 tuple = { "(" ~ expr ~ ("," ~ expr)* ~ ","? ~ ")" }
 tuple_index = @{ ASCII_DIGIT+ }
@@ -56,4 +56,4 @@ ident      = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
 number     = @{ "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
-COMMENT = _{ ("--" ~ (!"\n" ~ ANY)*) | ("/*" ~ (!"*/" ~ ANY)* ~ "*/") }
+COMMENT    = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
